@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+ <html lang="ar"> 
+    <head>
+         <meta charset="UTF-8"> 
+         <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+         <title>فلترة الأخطاء من ملف TXT</title> 
+         <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4; } 
+          h2 { color: #333; } 
+          input, button { margin: 10px; padding: 10px; } 
+          button { background-color: #007BFF; color: white; border: none; cursor: pointer; } 
+          button:hover { background-color: #0056b3; }
+           pre { background: #fff; padding: 10px; border: 1px solid #ddd; text-align: left; max-width: 600px; margin: auto; } 
+           </style>
+            </head>
+             <body>
+                 <h2>فلترة الأخطاء من ملف TXT</h2>
+                  <input type="file" id="fileInput" accept=".txt"> 
+                  <button onclick="filterFile()">ابدأ الفحص</button> 
+                  <button onclick="saveResults()" id="saveBtn" style="display:none;">حفظ النتائج</button> 
+                  <button onclick="printResults()" id="printBtn" style="display:none;">طباعة النتائج</button> 
+                  <button onclick="sendEmail()" id="emailBtn" style="display:none;">إرسال بالإيميل</button> 
+                  <h3>النتائج:</h3> 
+                  <pre id="output">لم يتم الفحص بعد...</pre> 
+                  <script> let filteredLines = [];
+                   function filterFile() { const fileInput = document.getElementById('fileInput'); 
+                   const output = document.getElementById('output'); 
+                   const saveBtn = document.getElementById('saveBtn'); 
+                   const printBtn = document.getElementById('printBtn'); 
+                   const emailBtn = document.getElementById('emailBtn'); 
+                   if (fileInput.files.length === 0) { alert("الرجاء اختيار ملف نصي."); return; } 
+                   const file = fileInput.files[0];
+                    const reader = new FileReader(); 
+                    reader.onload = function(event) { const lines = event.target.result.split("\n"); 
+                    filteredLines = lines.filter(line => line.toLowerCase().includes("fail")); 
+                    if (filteredLines.length > 0) {
+                         output.textContent = filteredLines.join("\n");
+                          saveBtn.style.display = "inline"; 
+                          printBtn.style.display = "inline"; 
+                          emailBtn.style.display = "inline"; 
+                          alert(`تم العثور على ${filteredLines.length} أخطاء!`); }
+                           else { output.textContent = "لم يتم العثور على أي أخطاء."; 
+                           saveBtn.style.display = "none"; 
+                           printBtn.style.display = "none"; 
+                           emailBtn.style.display = "none"; } 
+                           }; 
+                           reader.readAsText(file);
+                            } 
+                            function getFormattedDateTime() {
+
+                             const now = new Date();
+
+                             const year = now.getFullYear();
+
+                            const month = String(now.getMonth() + 1).padStart(2, '0');
+
+                             const day = String(now.getDate()).padStart(2, '0');
+
+                              const hours = String(now.getHours()).padStart(2, '0');
+
+                               const minutes = String(now.getMinutes()).padStart(2, '0');
+
+                              const seconds = String(now.getSeconds()).padStart(2, '0');
+
+                             return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+
+                              }
+
+                              function saveResults() {
+
+                               if (filteredLines.length === 0) return;
+                                    const timestamp = getFormattedDateTime();
+                                    const fileName = `filtered_results_${timestamp}.txt`; 
+                                    const blob = new Blob([filteredLines.join("\n")], { type: "text/plain" });
+                                    const link = document.createElement("a");
+                                    link.href = URL.createObjectURL(blob);
+                                    link.download = fileName;
+                                    link.click();
+                                     }
+                                      function printResults() { 
+                                        if (filteredLines.length === 0) return;
+                                         const printWindow = window.open("", "", "width=600,height=600");
+                                          printWindow.document.write("<pre>" + filteredLines.join("\n") + "</pre>");
+                                           printWindow.document.close();
+                                            printWindow.print();
+                                             }
+                                              function sendEmail() {
+                                                 if (filteredLines.length === 0) return;
+                                                  const email = prompt("أدخل عنوان البريد الإلكتروني لإرسال الملف:");
+                                                   if (!email) return;
+                                                    const mailtoLink = `mailto:${email}?subject=نتائج%20الفحص&body=النتائج%20المكتشفة:%0A${encodeURIComponent(filteredLines.join("\n"))}`;
+                                                     window.location.href = mailtoLink;
+                                                      }
+                                                       </script>
+                                                        </body>
+                                                         </html>
